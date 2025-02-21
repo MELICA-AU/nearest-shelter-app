@@ -1,4 +1,4 @@
-# Meaningful Repo name
+# Nearest Shelter Shiny App
 *pick type of repository (TOOL, ETL, ANALYSIS, ADMIN)*
 
 MELICA investigates the empirical basis of Cold-War preparedness in Aarhus by (1) reconstructing the everyday experience of individuals living in Cold-War Aarhus through spatial analysis of shelter locations and text analysis of written sources to assess whether the evidence points towards a militarization of everyday life or ‘normalization’ of war, (2) identifying gaps between how Cold-War civil defense was conceptualized at the national level and delivered at the local level in Aarhus, and (3) evaluating civil defense effectiveness by simulating a shelter drill, identifying weak points and stakeholders in civil defense planning.
@@ -11,7 +11,7 @@ The roadmap to accomplish our goals combines three research activities:
 ---
 
 ## Purpose
-[In two to three sentences state the purpose of this repository in greater detail, ideally tying it to an existing SDAM milestone. E.g., The purpose of this repository is to provide templates for all future SDAM repositories in order to save precious time and maintain high standards and uniformity of our documentation.]
+Create a public outreach app for calculating the nearest shelter from arbitrary destination. Calculate 5 nearest shelters from an arbitrary location.
 
 ---
 ## Authors
