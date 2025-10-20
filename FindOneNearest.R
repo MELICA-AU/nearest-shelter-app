@@ -3,8 +3,12 @@ library(leaflet)
 library(mapboxapi)
 library(sf)
 
+token <- read_lines("token.txt")
 
-token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNtYWY2bnVodzAyYW0ycnBsbGdpeW1mOWQifQ.GcWOIrjU3xClAEpiKMSUWA"
+if (token == "") {
+  stop("Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
+} else print("token is copacetic")
+
   # Read in the shelter data
 shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
 

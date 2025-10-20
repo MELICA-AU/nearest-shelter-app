@@ -1,12 +1,21 @@
-
 library(shiny)
 library(leaflet)
 library(mapboxapi)
-library(tidyverse)
 library(sf)
+library(readr)
 
+token_path <- "token.txt"
+if (file.exists(token_path)) {
+  token <- trimws(read_lines(token_path)[1])
+  Sys.setenv(MAPBOX_TOKEN = token)
+  message("Mapbox token loaded.")
+} else {
+  stop("token.txt not found. Please create it with your Mapbox token.")
+}
 
-token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNtYWY2bnVodzAyYW0ycnBsbGdpeW1mOWQifQ.GcWOIrjU3xClAEpiKMSUWA"
+# Register explicitly with mapboxapi
+mapboxapi::mb_access_token(token, overwrite = TRUE)
+
 # Read in the shelter data
 shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
 
@@ -25,7 +34,7 @@ ui <- fluidPage(
     p(),
     p("Instructions to the nearest shelter:"),
     em("Beware: due to urban development shelters may no longer exist or be barred"),
-    p("Five nearest shelters are indicated. Times may exceed limit. Check distance in time by clicking on shelter pointers."),
+    p("Routes to five nearest shelters are color-coded by distance (red = closest, green = farthest). Travel times may exceed set limit. Check distance and capacity by clicking on shelter pointers."),
     #textInput("instructions_text", label = "Instructions to the nearest shelter /n (beware:location error ~100m)"),
     htmlOutput("instructions"),
     width = 3
@@ -39,7 +48,7 @@ ui <- fluidPage(
 # then map the routes and print out the driving directions
 server <- function(input, output) {
   
-  # Define input_sf as a reactive value
+    # Define input_sf as a reactive value
   input_sf <- reactiveVal(NULL)
   
   output$map <- renderLeaflet({
@@ -83,6 +92,7 @@ server <- function(input, output) {
       hit$time <- mb_matrix(
         origins = input_sf_value,
         destinations = hit,
+        access_token = token,
         profile = input$transport) %>%
         as.vector()
       
@@ -161,12 +171,13 @@ server <- function(input, output) {
         leafletProxy(mapId = "map") %>%
           clearShapes() %>%
           addMarkers(data = locs,
-                     popup = ~paste0(input$transport, " travel time: ", round(locs$time, 2), " minutes"))
+                     popup = ~paste0("<b>Shelter:</b> ", BDnr_1987, "<br>",
+                                     "<b>Capacity:</b> ", Final_Pub_Size, "<br>",
+                                     "Est. ", input$transport, " time: ", round(time, 1), " min<br>"))
         
         # Add routes to the map in the reverse order (most distant first)
        # for (i in rev(index_order)) {
         for (i in rev(seq_along(routelist))) {
-          route <- routelist[[i]]
           route <- routelist[[i]]
           color <- color_palette[i]
           

@@ -5,6 +5,13 @@ library(mapboxapi)
 library(tidyverse)
 library(sf)
 
+token <- read_lines("token.txt")
+
+if (token == "") {
+  stop("Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
+} else print("token is copacetic")
+
+
 # Read in the shelter data
 shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
 # must be in WGSS84
@@ -20,9 +27,9 @@ ui <- fluidPage(
     selectInput("time", label = "Within 5 or 10 mins?", choices = c(5, 10)),
     actionButton("action", "Find the nearest shelters within 5-10 min distance"),
     p(),
-    p("Instructions to the nearest shelter:"),
+    p("Display route by clicking on a shelter marker:"),
     em("Beware: due to urban development shelters may no longer exist or be barred"),
-    p("Five nearest shelters are indicated. Times may exceed limit. Check distance in time by clicking on shelter pointers."),
+    p("Shelter proximity is indicated by color (green = close, red = distant). Travel times may exceed set limit. Check travel time and capacity by clicking on shelter pointers."),
     #textInput("instructions_text", label = "Instructions to the nearest shelter /n (beware:location error ~100m)"),
     htmlOutput("instructions"),
     width = 3
@@ -36,10 +43,7 @@ server <- function(input, output, session) {
   library(purrr)
   library(stringr)
   
-  token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNtYWY2bnVodzAyYW0ycnBsbGdpeW1mOWQifQ.GcWOIrjU3xClAEpiKMSUWA"
-  
-
-  
+ 
   # reactive storage
   input_sf  <- reactiveVal(NULL)
   routes_all <- reactiveVal(list())
