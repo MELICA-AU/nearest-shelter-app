@@ -51,6 +51,7 @@ server <- function(input, output) {
   })
   
   closest_locations <- eventReactive(input$action, {
+    output$instructions <- renderUI({ HTML("") }) # reset map
     
     input_sf_value <- mb_geocode(input$address_text, 
                                  output = "sf",
@@ -73,6 +74,11 @@ server <- function(input, output) {
       st_filter(within_time, .predicate = st_within) #changed from st_intersects
     
     # Note: This loop iterates over each route to calculate directions, which can be computationally expensive.
+    # We are also handling the case of "no hits" early
+    if (nrow(hit) == 0) {
+      return(NULL)
+    }
+    
     if(nrow(hit) > 1) {
       hit$time <- mb_matrix(
         origins = input_sf_value,
@@ -81,27 +87,51 @@ server <- function(input, output) {
         as.vector()
       
       hit$index_order <- order(hit$time)[1:nrow(hit)]
-      hit <- hit %>% 
-        arrange(time) %>% 
-        slice(1:5)
+      hit <- hit %>% arrange(time) %>% slice(1:5)
       
     } else if(nrow(hit) == 1){
       return(hit)
     }
     
     return(hit)
-    
   })
   
   observeEvent(closest_locations(), {
-    if (nrow(closest_locations()) > 0) {
+       locs <- closest_locations()
+      
+      # ✅ Handle no results:
+      if (is.null(locs) || nrow(locs) == 0) {
+        
+        leafletProxy("map") %>%
+          clearShapes() %>%
+          clearMarkers() %>%
+          flyToBounds(
+            lng1 = st_bbox(shelter[167,])[["xmin"]],
+            lat1 = st_bbox(shelter[167,])[["ymin"]],
+            lng2 = st_bbox(shelter[167,])[["xmax"]],
+            lat2 = st_bbox(shelter[167,])[["ymax"]]
+          )
+        
+        output$instructions <- renderUI({
+          HTML("<b style='color:red;'>No shelters available in your specified limits. Try again, please.</b>")
+        })
+        
+        return(NULL)
+      }
+      
+      # ✅ Always clear old shapes before new ones
+      leafletProxy("map") %>%
+        clearShapes() %>%
+        clearMarkers()
+    
+    if (nrow(locs) > 0) {
       
       routelist <- list()
-      for( i in 1:nrow(closest_locations())){
+      for( i in 1:nrow(locs)){
         print(i)
         route <- mb_directions(
           origin = st_coordinates(input_sf()),
-          destination = st_coordinates(closest_locations()[i,]),
+          destination = st_coordinates(locs[i,]),
           profile = input$transport,
           output = "sf",
           steps = TRUE,
@@ -126,12 +156,12 @@ server <- function(input, output) {
         color_palette <- brewer.pal(num_colors, "RdYlGn")
         
         # extract the order of routes by speed from most distant to the closest
-        index_order <- closest_locations()$index_order
+        index_order <- locs$index_order
         
         leafletProxy(mapId = "map") %>%
           clearShapes() %>%
-          addMarkers(data = closest_locations(),
-                     popup = ~paste0(input$transport, " travel time: ", round(closest_locations()$time, 2), " minutes"))
+          addMarkers(data = locs,
+                     popup = ~paste0(input$transport, " travel time: ", round(locs$time, 2), " minutes"))
         
         # Add routes to the map in the reverse order (most distant first)
        # for (i in rev(index_order)) {
