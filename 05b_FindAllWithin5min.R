@@ -6,9 +6,9 @@ library(tidyverse)
 library(sf)
 
 
-token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNrcWdhNGlybjB4OG0ydnNjcWZtOG9mc3UifQ.EbNmMF9aF8th5cb-h5f1lQ"
+token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNtYWY2bnVodzAyYW0ycnBsbGdpeW1mOWQifQ.GcWOIrjU3xClAEpiKMSUWA"
 # Read in the shelter data
-shelter <- readRDS("../output_data/BDG_andreas.rds") 
+shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
 
 # must be in WGSS84
 #shelter <- st_transform(shelter,4326)
@@ -23,8 +23,9 @@ ui <- fluidPage(
     selectInput("time", label = "Within 5 or 10 mins?", choices = c(5, 10)),
     actionButton("action", "Find the nearest shelters within 5-10 min distance"),
     p(),
-    p("Instructions to the shelter(s):"),
-    em("Beware:unverified shelters may not exist"),
+    p("Instructions to the nearest shelter:"),
+    em("Beware: due to urban development shelters may no longer exist or be barred"),
+    p("Five nearest shelters are indicated. Times may exceed limit. Check distance in time by clicking on shelter pointers."),
     #textInput("instructions_text", label = "Instructions to the nearest shelter /n (beware:location error ~100m)"),
     htmlOutput("instructions"),
     width = 3
@@ -69,7 +70,7 @@ server <- function(input, output) {
     
     # Transform the nearest shelter dataframe to include travel times to each shelter from the user's input location
     hit <- shelter %>% 
-      st_filter(within_time, .predicate = st_intersects)
+      st_filter(within_time, .predicate = st_within) #changed from st_intersects
     
     # Note: This loop iterates over each route to calculate directions, which can be computationally expensive.
     if(nrow(hit) > 1) {

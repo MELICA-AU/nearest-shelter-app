@@ -4,9 +4,9 @@ library(mapboxapi)
 library(sf)
 
 
-token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNrcWdhNGlybjB4OG0ydnNjcWZtOG9mc3UifQ.EbNmMF9aF8th5cb-h5f1lQ"
+token <- "pk.eyJ1IjoiYWRpdmVhIiwiYSI6ImNtYWY2bnVodzAyYW0ycnBsbGdpeW1mOWQifQ.GcWOIrjU3xClAEpiKMSUWA"
   # Read in the shelter data
-shelter <- read_rds("../output_data/BDG_andreas.rds") 
+shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
 
 # must be in WGSS84
 #shelter <- st_transform(shelter,4326)
@@ -20,7 +20,7 @@ ui <- fluidPage(
     actionButton("action", "Find the nearest shelter"),
     p(),
     p("Instructions to the shelter:"),
-    em("Beware:unverified shelters may not exist"),
+    em("Beware: shelter may not exist due to urban development"),
     #textInput("instructions_text", label = "Instructions to the nearest shelter /n (beware:location error ~100m)"),
     htmlOutput("instructions"),
     width = 3
@@ -56,6 +56,7 @@ server <- function(input, output) {
     min_index <- mb_matrix(
       origins = input_sf,
       destinations = shelter,
+      profile = "walking",
       access_token = token
     ) %>%
       as.vector() %>%
