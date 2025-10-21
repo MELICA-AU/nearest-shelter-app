@@ -3,24 +3,22 @@ library(leaflet)
 library(mapboxapi)
 library(sf)
 library(readr)
+library(tidyverse)
 
-token_path <- "token.txt"
-if (file.exists(token_path)) {
-  token <- trimws(read_lines(token_path)[1])
-  Sys.setenv(MAPBOX_TOKEN = token)
-  message("Mapbox token loaded.")
+# --- 1. Load Mapbox token from environment -----------------------
+token <- Sys.getenv("MAPBOX_TOKEN")
+
+if (token == "") {
+  stop("❌ Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
 } else {
-  stop("token.txt not found. Please create it with your Mapbox token.")
+  message("✅ Mapbox token loaded from environment.")
 }
-
-# Register explicitly with mapboxapi
-mapboxapi::mb_access_token(token, overwrite = TRUE)
 
 # Read in the shelter data
 shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
 
 # must be in WGSS84
-#shelter <- st_transform(shelter,4326)
+shelter <- st_transform(shelter,4326)
 
 # Set up a sidebar panel with a text box for an input address, 
 # and a placeholder to print out the driving instructions

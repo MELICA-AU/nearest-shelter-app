@@ -1,0 +1,13 @@
+name: nearest-shelter-app
+title: nearest-shelter-app
+username: adela-sobotkova
+account: adela-sobotkova
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15817916
+bundleId: 11064027
+url: https://adela-sobotkova.shinyapps.io/nearest-shelter-app/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Renviron|FindFive.R|FindFiveNearest.R|FindOneNearest.R|LICENSE.md|README.md|token.txt

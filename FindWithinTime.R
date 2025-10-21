@@ -1,3 +1,7 @@
+# ===============================================================
+#  Shiny App: Within Time — Find Nearest Shelters within Specified Time
+# ===============================================================
+
 
 library(shiny)
 library(leaflet)
@@ -5,11 +9,14 @@ library(mapboxapi)
 library(tidyverse)
 library(sf)
 
-token <- read_lines("token.txt")
+# --- 1. Load Mapbox token from environment -----------------------
+token <- Sys.getenv("MAPBOX_TOKEN")
 
 if (token == "") {
-  stop("Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
-} else print("token is copacetic")
+  stop("❌ Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
+} else {
+  message("✅ Mapbox token loaded from environment.")
+}
 
 
 # Read in the shelter data
