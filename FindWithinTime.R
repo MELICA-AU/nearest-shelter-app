@@ -6,21 +6,30 @@
 library(shiny)
 library(leaflet)
 library(mapboxapi)
-library(tidyverse)
+library(dplyr)
 library(sf)
+library(readr)
 
-# --- 1. Load Mapbox token from environment -----------------------
-token <- Sys.getenv("MAPBOX_TOKEN")
+# --- 1. Load Mapbox token in  environment -----------------------
+# token <- Sys.getenv("MAPBOX_TOKEN")
+# 
+# if (token == "") {
+#   stop("❌ Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
+# } else {
+#   message("✅ Mapbox token loaded from environment.")
+# }
+# 
+
+token <- read_lines("token.txt")
 
 if (token == "") {
-  stop("❌ Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
-} else {
-  message("✅ Mapbox token loaded from environment.")
-}
+  stop("Mapbox token not found. Please set MAPBOX_TOKEN in your .Renviron file.")
+} else print("token is copacetic")
 
+mapboxapi::mb_access_token(token, install = TRUE, overwrite = TRUE)
 
 # Read in the shelter data
-shelter <- readRDS("../shelter-data/output_data/BDG_wide2024.rds") 
+shelter <- readRDS("data/BDG_wide2024.rds") 
 # must be in WGSS84
 shelter <- st_transform(shelter,4326)
 
@@ -59,7 +68,7 @@ server <- function(input, output, session) {
   output$map <- renderLeaflet({
     leaflet() %>%
       addMapboxTiles(
-        style_id = "satellite-streets-v11",
+        style_id = "light-v9",
         username = "mapbox",
         access_token = token
       ) %>%
